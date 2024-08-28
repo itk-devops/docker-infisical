@@ -29,7 +29,7 @@ server {
         add_header "Access-Control-Allow-Headers" "Authorization, origin, accept";
 
         proxy_set_header Host $http_host;
-        proxy_pass http://grafana:3000;
+        proxy_pass http://infisical:8080;
     }
 
     error_log /dev/stderr;
