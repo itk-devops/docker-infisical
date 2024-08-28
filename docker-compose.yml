@@ -1,0 +1,81 @@
+# itk-version: 3.2.1
+networks:
+  frontend:
+    external: true
+  app:
+    driver: bridge
+    internal: false
+
+services:
+  nginx:
+    image: nginxinc/nginx-unprivileged:alpine
+    networks:
+      - app
+      - frontend
+    depends_on:
+      - infisical
+    ports:
+      - '8080'
+    volumes:
+      - ./.docker/templates:/etc/nginx/templates:ro
+      - .:/app
+    environment:
+      NGINX_FPM_SERVICE: ${COMPOSE_PROJECT_NAME}-phpfpm-1:9000
+      NGINX_WEB_ROOT: /app/web
+      NGINX_PORT: 8080
+      NGINX_MAX_BODY_SIZE: 5M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${COMPOSE_DOMAIN}`)"
+#      HTTPS config - uncomment to enable redirect from :80 to :443
+#      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=redirect-to-https"
+#      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+  infisical:
+    image: infisical/infisical:latest-postgres
+    ports:
+      - "80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      db-migration:
+        condition: service_completed_successfully
+
+  redis:
+    image: redis:7-alpine
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379"
+    networks:
+      - app
+    volumes:
+      - .docker/data/redis:/data
+
+  db:
+    image: postgres:14-alpine
+    healthcheck:
+      test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - app
+    volumes:
+      - .docker/data/postgresql:/var/lib/postgresql/data
+
+  db-migration:
+    image: infisical/infisical:latest-postgres
+    command: npm run migration:latest
+    networks:
+      - app
+    depends_on:
+      db:
+        condition: service_healthy
