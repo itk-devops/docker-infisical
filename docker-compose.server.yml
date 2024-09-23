@@ -7,7 +7,7 @@ networks:
     internal: false
 
 services:
-   nginx:
+  nginx:
     image: nginxinc/nginx-unprivileged:alpine
     restart: unless-stopped
     networks:
@@ -33,3 +33,55 @@ services:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${COMPOSE_SERVER_DOMAIN}`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=websecure"
+
+  infisical:
+    image: infisical/infisical:latest-postgres
+    ports:
+      - "8080"
+    environment:
+      - NODE_ENV=production
+    env_file: .infisical.env
+    networks:
+      - app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      db-migration:
+        condition: service_completed_successfully
+
+  redis:
+    image: redis:7-alpine
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    env_file: .infisical.env
+    ports:
+      - "6379"
+    networks:
+      - app
+    volumes:
+      - .docker/data/redis:/data
+
+  db:
+    image: postgres:14-alpine
+    env_file: .infisical.env
+    healthcheck:
+      test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - app
+    volumes:
+      - .docker/data/postgresql:/var/lib/postgresql/data
+
+  db-migration:
+    image: infisical/infisical:latest-postgres
+    command: npm run migration:latest
+    env_file: .infisical.env
+    networks:
+      - app
+    depends_on:
+      db:
+        condition: service_healthy

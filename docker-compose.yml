@@ -1,4 +1,3 @@
-# itk-version: 3.2.1
 networks:
   frontend:
     external: true
@@ -38,7 +37,11 @@ services:
       - "8080"
     environment:
       - NODE_ENV=production
-    env_file: .infisical.env
+    env_file:
+      - path: ./.infisical.env
+        required: true # default
+      - path: ./.infisical.override.env
+        required: false
     networks:
       - app
     depends_on:
@@ -49,21 +52,13 @@ services:
       db-migration:
         condition: service_completed_successfully
 
-  redis:
-    image: redis:7-alpine
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-    env_file: .infisical.env
-    ports:
-      - "6379"
-    networks:
-      - app
-    volumes:
-      - .docker/data/redis:/data
-
   db:
     image: postgres:14-alpine
-    env_file: .infisical.env
+    env_file:
+      - path: ./.infisical.env
+        required: true # default
+      - path: ./.infisical.override.env
+        required: false
     healthcheck:
       test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
       interval: 5s
@@ -77,9 +72,25 @@ services:
   db-migration:
     image: infisical/infisical:latest-postgres
     command: npm run migration:latest
-    env_file: .infisical.env
+    env_file:
+      - path: ./.infisical.env
+        required: true # default
+      - path: ./.infisical.override.env
+        required: false
     networks:
       - app
     depends_on:
       db:
         condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    env_file: .infisical.env
+    ports:
+      - "6379"
+    networks:
+      - app
+    volumes:
+      - .docker/data/redis:/data
