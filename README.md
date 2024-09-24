@@ -9,6 +9,6 @@ environment.
 ## Configuration
 
 This repository includes a `.infisical.env` file. In any production setup, it
-should be overridden with a `.infisical.override.env` file. For detailed
+should be overridden with a `.infisical.local.env` file. For detailed
 information about configuration options, refer to
 the [Infisical documentation on configuration environment variables](https://infisical.com/docs/self-hosting/configuration/envars).

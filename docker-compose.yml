@@ -40,7 +40,7 @@ services:
     env_file:
       - path: ./.infisical.env
         required: true # default
-      - path: ./.infisical.override.env
+      - path: ./.infisical.local.env
         required: false
     networks:
       - app
@@ -57,7 +57,7 @@ services:
     env_file:
       - path: ./.infisical.env
         required: true # default
-      - path: ./.infisical.override.env
+      - path: ./.infisical.local.env
         required: false
     healthcheck:
       test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
@@ -75,7 +75,7 @@ services:
     env_file:
       - path: ./.infisical.env
         required: true # default
-      - path: ./.infisical.override.env
+      - path: ./.infisical.local.env
         required: false
     networks:
       - app
@@ -87,7 +87,11 @@ services:
     image: redis:7-alpine
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
-    env_file: .infisical.env
+        env_file:
+      - path: ./.infisical.env
+        required: true # default
+      - path: ./.infisical.local.env
+        required: false
     ports:
       - "6379"
     networks:
