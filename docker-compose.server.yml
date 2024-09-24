@@ -35,7 +35,7 @@ services:
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=websecure"
 
   infisical:
-    image: infisical/infisical:latest-postgres
+    image: infisical/infisical:v0.85.0-postgres
     env_file: .env
     networks:
       - app
@@ -79,7 +79,7 @@ services:
       - .docker/data/postgresql:/var/lib/postgresql/data
 
   db-migration:
-    image: infisical/infisical:latest-postgres
+    image: infisical/infisical:v0.85.0-postgres
     env_file: .env
     command: npm run migration:latest
     networks:
