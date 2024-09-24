@@ -14,7 +14,7 @@ services:
       - app
       - frontend
     depends_on:
-      - phpfpm
+      - infisical
     volumes:
       - ./.docker/templates:/etc/nginx/templates:ro
       - ./.docker/nginx.conf:/etc/nginx/nginx.conf:ro
