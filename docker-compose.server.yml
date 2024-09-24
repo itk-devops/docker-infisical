@@ -36,12 +36,15 @@ services:
 
   infisical:
     image: infisical/infisical:latest-postgres
+    env_file: .env
+    networks:
+      - app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8080"
     environment:
       - NODE_ENV=production
-    networks:
-      - app
     depends_on:
       db:
         condition: service_healthy
@@ -52,6 +55,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    env_file: .env
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     ports:
@@ -63,6 +67,7 @@ services:
 
   db:
     image: postgres:14-alpine
+    env_file: .env
     healthcheck:
       test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
       interval: 5s
@@ -75,6 +80,7 @@ services:
 
   db-migration:
     image: infisical/infisical:latest-postgres
+    env_file: .env
     command: npm run migration:latest
     networks:
       - app

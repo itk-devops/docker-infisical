@@ -33,12 +33,15 @@ services:
 
   infisical:
     image: infisical/infisical:latest-postgres
+    env_file: .env.docker.local
+    networks:
+      - app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8080"
     environment:
       - NODE_ENV=production
-    networks:
-      - app
     depends_on:
       db:
         condition: service_healthy
@@ -47,8 +50,21 @@ services:
       db-migration:
         condition: service_completed_successfully
 
+  redis:
+    image: redis:7-alpine
+    env_file: .env.docker.local
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379"
+    networks:
+      - app
+    volumes:
+      - .docker/data/redis:/data
+
   db:
     image: postgres:14-alpine
+    env_file: .env.docker.local
     healthcheck:
       test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
       interval: 5s
@@ -61,20 +77,10 @@ services:
 
   db-migration:
     image: infisical/infisical:latest-postgres
+    env_file: .env.docker.local
     command: npm run migration:latest
     networks:
       - app
     depends_on:
       db:
         condition: service_healthy
-
-  redis:
-    image: redis:7-alpine
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-    ports:
-      - "6379"
-    networks:
-      - app
-    volumes:
-      - .docker/data/redis:/data
