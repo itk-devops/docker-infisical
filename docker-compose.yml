@@ -32,8 +32,8 @@ services:
 #      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
   infisical:
-    image: infisical/infisical:latest-postgres
-    env_file: .env.docker.local
+    image: infisical/infisical:v0.85.0-postgres
+    env_file: .infisical.env
     networks:
       - app
     extra_hosts:
@@ -52,7 +52,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    env_file: .env.docker.local
+    env_file: .infisical.env
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     ports:
@@ -64,7 +64,7 @@ services:
 
   db:
     image: postgres:14-alpine
-    env_file: .env.docker.local
+    env_file: .infisical.env
     healthcheck:
       test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
       interval: 5s
@@ -76,8 +76,8 @@ services:
       - .docker/data/postgresql:/var/lib/postgresql/data
 
   db-migration:
-    image: infisical/infisical:latest-postgres
-    env_file: .env.docker.local
+    image: infisical/infisical:v0.85.0-postgres
+    env_file: .infisical.env
     command: npm run migration:latest
     networks:
       - app
