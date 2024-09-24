@@ -37,11 +37,6 @@ services:
       - "8080"
     environment:
       - NODE_ENV=production
-    env_file:
-      - path: ./.infisical.env
-        required: true # default
-      - path: ./.infisical.local.env
-        required: false
     networks:
       - app
     depends_on:
@@ -54,11 +49,6 @@ services:
 
   db:
     image: postgres:14-alpine
-    env_file:
-      - path: ./.infisical.env
-        required: true # default
-      - path: ./.infisical.local.env
-        required: false
     healthcheck:
       test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
       interval: 5s
@@ -72,11 +62,6 @@ services:
   db-migration:
     image: infisical/infisical:latest-postgres
     command: npm run migration:latest
-    env_file:
-      - path: ./.infisical.env
-        required: true # default
-      - path: ./.infisical.local.env
-        required: false
     networks:
       - app
     depends_on:
@@ -87,11 +72,6 @@ services:
     image: redis:7-alpine
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
-        env_file:
-      - path: ./.infisical.env
-        required: true # default
-      - path: ./.infisical.local.env
-        required: false
     ports:
       - "6379"
     networks:
