@@ -1,3 +1,4 @@
 .docker/data/postgresql
 .docker/data/redis
 .infisical.override.env
+.env.docker.local
